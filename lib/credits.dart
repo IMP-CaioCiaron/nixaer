@@ -11,7 +11,7 @@ class Credits extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 30),
+            padding: EdgeInsets.only(top: 30, bottom: 5),
             child: Row(
                 children: [
                   Icon(Icons.account_circle_rounded, size: 50),
@@ -20,8 +20,13 @@ class Credits extends StatelessWidget {
                   ),
                 ]),
           ),
+          Divider(
+              height: 25,
+              thickness: 1,
+              color: Colors.white,
+            ),
           Padding(
-            padding: EdgeInsets.only(top: 30),
+            padding: EdgeInsets.only(top: 5),
             child: Row(
                 children: [
                   Icon(Icons.account_circle_rounded, size: 50),

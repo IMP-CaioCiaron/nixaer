@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:nixaer/credits.dart';
-
 void main() {
   runApp(MyApp());
 }

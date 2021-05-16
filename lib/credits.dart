@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 class Credits extends StatelessWidget {
   // This widget is the root of your application.
+  final String iconBase = 'assets/colorIcons/';
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -34,6 +37,13 @@ class Credits extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyText2,
                   ),
                 ]),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 50),
+            child: SvgPicture.asset(
+              iconBase + 'ice_pellets.svg',
+              semanticsLabel: 'Icon',
+            ),
           ),
         ],
       ),

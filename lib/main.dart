@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:nixaer/credits.dart';
+import 'package:nixaer/home.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,25 +24,55 @@ class MyApp extends StatelessWidget {
 
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Credits(),
+      home: App(),
     );
   }
 }
 
-class Splash extends StatefulWidget {
-  Splash({Key key, this.title}) : super(key: key);
-
-
+class App extends StatefulWidget {
+  App({Key key, this.title}) : super(key: key);
   final String title;
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  _AppState createState() => _AppState();
 }
 
-class _SplashScreenState extends State<Splash> {
+class _AppState extends State<App> {
+  num _activity = 0;
+  final List<Widget> _activities = [
+    Home(),
+    Credits(),
+  ];
+
+  void _push(activity){
+    setState(() =>{
+      _activity = activity
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context){
-
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.indigo[900],
+        selectedItemColor: Colors.lightBlue,
+        unselectedItemColor: Colors.white,
+        currentIndex: _activity,
+        onTap: _push,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Início'
+        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment),
+            label: 'Créditos'
+          )
+        ],
+      ),
+    body: _activities[_activity]);
   }
 }

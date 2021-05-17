@@ -38,7 +38,10 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
+  PageController _activityController = PageController();
+
   num _activity = 0;
+
   final List<Widget> _activities = [
     Home(),
     Credits(),
@@ -46,7 +49,10 @@ class _AppState extends State<App> {
 
   void _push(activity){
     setState(() =>{
-      _activity = activity
+      _activity = activity,
+      _activityController.animateToPage(
+          activity, duration: Duration(milliseconds: 300), curve: Curves.easeOut
+      )
     });
   }
 
@@ -73,6 +79,11 @@ class _AppState extends State<App> {
           )
         ],
       ),
-    body: _activities[_activity]);
+        body: PageView(
+          controller: _activityController,
+          onPageChanged: _push,
+          children: _activities,
+        )
+    );
   }
 }

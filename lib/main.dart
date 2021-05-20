@@ -38,14 +38,26 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  PageController _activityController = PageController();
+  final PageController _activityController = new PageController();
+  num _activity;
+  List<Widget> _activities;
 
-  num _activity = 0;
+  @override
+  void initState(){
+    super.initState();
+    _activity = 0;
+    _activities = [
+      Home(),
+      Credits(),
+    ];
 
-  final List<Widget> _activities = [
-    Home(),
-    Credits(),
-  ];
+  }
+
+  @override
+  void dispose(){
+    _activityController.dispose();
+    super.dispose();
+  }
 
   void _push(activity){
     setState(() =>{

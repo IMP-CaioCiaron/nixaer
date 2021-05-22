@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
@@ -12,25 +14,37 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home>{
+class _HomeState extends State<Home>{
+  StreamSubscription _update;
   final String _iconBase = 'assets/colorIcons/';
   Position _position;
   String _address;
   double _latitude;
   double _longitude;
 
-  @override
-  bool get wantKeepAlive => true;
 
   @override
   void initState(){
     super.initState();
     requestPermissions()
-        .then((_) => fetchPosition())
+        .then((_) => _fetchPosition())
         .onError((error, stackTrace) => print(error));
+    _update = Geolocator.getPositionStream(
+        desiredAccuracy: LocationAccuracy.best,
+        intervalDuration: Duration(minutes: 10),
+        distanceFilter: 2000)
+        .listen((_){
+          _fetchPosition();
+    });
   }
 
-  Future fetchPosition() async {
+  @override
+  void dispose(){
+    _update.cancel();
+    super.dispose();
+  }
+
+  Future _fetchPosition() async {
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _position = position;
@@ -39,16 +53,21 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home>{
     });
 
     String address = await placemarkFromCoordinates(_latitude, _longitude)
-        .then((value) => value.first.subAdministrativeArea);
+        .then((value){
+          print(value);
+          print(value.first.subAdministrativeArea);
+          print(value.first.locality);
+          return (value.first.subAdministrativeArea != '') ? value.first.subAdministrativeArea : value.first.locality;});
     setState(() {
       _address = address;
     });
   }
 
 
+
+
   @override
   Widget build(BuildContext context){
-    super.build(context);
     return Container(
       child: Column(
           children: [

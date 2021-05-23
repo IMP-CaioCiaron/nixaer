@@ -26,7 +26,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
   var data;
 
   @override
-  bool get wantKeepAlive => keepAlive;
+  bool get wantKeepAlive => true;
 
   @override
   void initState(){
@@ -34,20 +34,9 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
     requestPermissions()
         .then((_) => _fetchPosition())
         .onError((error, stackTrace) => print(error));
-    _togglePositionListening();
-  }
-
-  @override
-  void dispose(){
-    if (_update != null){
-    _update.cancel();
-    }
-    super.dispose();
   }
 
   Future _fetchPosition() async {
-    keepAlive = true;
-    updateKeepAlive();
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _position = position;
@@ -68,17 +57,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
     });
   }
 
-  void _togglePositionListening(){
-    if (_update == null){
-      _update = Geolocator.getPositionStream(
-          desiredAccuracy: LocationAccuracy.best,
-          intervalDuration: Duration(seconds: 10),
-          distanceFilter: 2000)
-          .listen((_){
-        _fetchPosition();
-      });
-    }
-  }
+//TODO update weather button
 
 
   @override

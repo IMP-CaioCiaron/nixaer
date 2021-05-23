@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:nixaer/util/getPermissions.dart';
+import 'package:nixaer/connection/requestcontroller.dart';
 
 class Home extends StatefulWidget {
   Home({Key key, this.title}) : super(key: key);
@@ -14,14 +15,18 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home>{
+class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
+  bool keepAlive = false;
   StreamSubscription _update;
   final String _iconBase = 'assets/colorIcons/';
   Position _position;
   String _address;
   double _latitude;
   double _longitude;
+  var data;
 
+  @override
+  bool get wantKeepAlive => keepAlive;
 
   @override
   void initState(){
@@ -29,22 +34,20 @@ class _HomeState extends State<Home>{
     requestPermissions()
         .then((_) => _fetchPosition())
         .onError((error, stackTrace) => print(error));
-    _update = Geolocator.getPositionStream(
-        desiredAccuracy: LocationAccuracy.best,
-        intervalDuration: Duration(minutes: 10),
-        distanceFilter: 2000)
-        .listen((_){
-          _fetchPosition();
-    });
+    _togglePositionListening();
   }
 
   @override
   void dispose(){
+    if (_update != null){
     _update.cancel();
+    }
     super.dispose();
   }
 
   Future _fetchPosition() async {
+    keepAlive = true;
+    updateKeepAlive();
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _position = position;
@@ -54,20 +57,33 @@ class _HomeState extends State<Home>{
 
     String address = await placemarkFromCoordinates(_latitude, _longitude)
         .then((value){
-          print(value);
-          print(value.first.subAdministrativeArea);
-          print(value.first.locality);
           return (value.first.subAdministrativeArea != '') ? value.first.subAdministrativeArea : value.first.locality;});
+
+    RequestController _controller = new RequestController(_latitude, _longitude);
+    var resp = await _controller.data;
     setState(() {
+      data = resp;
       _address = address;
+      print(data);
     });
   }
 
-
+  void _togglePositionListening(){
+    if (_update == null){
+      _update = Geolocator.getPositionStream(
+          desiredAccuracy: LocationAccuracy.best,
+          intervalDuration: Duration(seconds: 10),
+          distanceFilter: 2000)
+          .listen((_){
+        _fetchPosition();
+      });
+    }
+  }
 
 
   @override
   Widget build(BuildContext context){
+    super.build(context);
     return Container(
       child: Column(
           children: [
@@ -98,7 +114,8 @@ class _HomeState extends State<Home>{
                   ),
                 ],
               ),
-            ), Text('$_position, $_address')
+            ),
+            Text('$_position, $_address'),
 
             /*FutureBuilder(
           future: _position,

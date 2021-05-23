@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nixaer/util/getLocation.dart';
 
 class Credits extends StatelessWidget {
   // This widget is the root of your application.
   final String iconBase = 'assets/colorIcons/';
+
 
   @override
   Widget build(BuildContext context) {

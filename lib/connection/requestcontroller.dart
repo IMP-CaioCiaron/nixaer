@@ -10,12 +10,12 @@ class RequestController {
   Map<String, Object> _params;
 
   RequestController(double latitude, double longitude, [
-    List timesteps = const ['current'],
     List fields = const ['temperature', 'weatherCode'],
+    List timesteps = const ['current'],
       ]) {
+    if (!fields.contains('weatherCode')){fields.add('weatherCode');}
     this._lat = latitude.toString();
     this._long = longitude.toString();
-
     this._params = {
       'apikey': this._key,
       'location': '${this._lat},${this._long}',
@@ -27,6 +27,7 @@ class RequestController {
 
   request() async {
     Map data = await Service.get(_params);
+    print(data);
     return data['data']['timelines'][0]['intervals'][0]['values'];
   }
 

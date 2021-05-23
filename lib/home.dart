@@ -53,7 +53,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
       _data = resp;
       _address = address;
       print(_data);
-      print(weatherCodes.WeatherCodes.getWeatherImgName(_data['data']['timelines'][0]['intervals'][0]));
+      print(weatherCodes.WeatherCodes.getWeatherImgName(_data['weatherCode']));
     });
   }
 

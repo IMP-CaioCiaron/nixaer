@@ -1,16 +1,33 @@
+import 'dart:io';
+
 import 'package:nixaer/connection/service.dart';
 
-class RequestController{
+class RequestController {
+  String _key = '5qA53G8Pik4xxibfLbFriQ2Ztb05rTjx';
+  Service _service;
   String _lat;
   String _long;
-  var _data;
+  Map<String, Object> _params;
 
-  RequestController(lat, long){
-    this._lat = lat.toString();
-    this._long = long.toString();
-    _data = receiveData(this._lat, this._long);
+  RequestController(double latitude, double longitude, [
+    List timesteps = const ['current'],
+    List fields = const ['temperature', 'weatherCode'],
+      ]) {
+    this._lat = latitude.toString();
+    this._long = longitude.toString();
+
+    this._params = {
+      'apikey': this._key,
+      'location': '${this._lat},${this._long}',
+      'fields': fields,
+      'units': 'metric',
+      'timesteps': timesteps,
+    };
   }
 
-  get data => _data;
+  request() async {
+    Map data = await Service.get(_params);
+    return data['data']['timelines'][0]['intervals'][0]['values'];
+  }
 
 }

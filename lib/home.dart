@@ -21,7 +21,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
   String _address;
   double _latitude;
   double _longitude;
-  var data;
+  var _data;
 
   @override
   bool get wantKeepAlive => true;
@@ -47,11 +47,11 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
           return (value.first.subAdministrativeArea != '') ? value.first.subAdministrativeArea : value.first.locality;});
 
     RequestController _controller = new RequestController(_latitude, _longitude);
-    var resp = await _controller.data;
+    var resp = await _controller.request();
     setState(() {
-      data = resp;
+      _data = resp;
       _address = address;
-      print(data);
+      print(_data);
     });
   }
 
@@ -93,6 +93,10 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
               ),
             ),
             Text('$_position, $_address'),
+            IconButton(
+              icon: Icon(Icons.share_location),
+              onPressed: _fetchPosition,
+            ),
 
             /*FutureBuilder(
           future: _position,

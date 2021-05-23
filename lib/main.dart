@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:nixaer/credits.dart';
 import 'package:nixaer/home.dart';
+import 'package:nixaer/search.dart';
 
 void main() {
   runApp(MyApp());
@@ -38,7 +39,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final PageController _activityController = new PageController();
+  final PageController _activityController = new PageController(initialPage: 0);
   num _activity;
   List<Widget> _activities;
 
@@ -48,6 +49,7 @@ class _AppState extends State<App> {
     _activity = 0;
     _activities = [
       Home(),
+      Search(),
       Credits(),
     ];
 
@@ -60,12 +62,17 @@ class _AppState extends State<App> {
   }
 
   void _push(activity){
-    setState(() =>{
-      _activity = activity,
-      _activityController.animateToPage(
-          activity, duration: Duration(milliseconds: 300), curve: Curves.easeOut
-      )
-    });
+    _activityController.animateToPage(
+        activity, duration: Duration(milliseconds: 300), curve: Curves.easeOut
+    );
+  }
+
+  void _mount(activity){
+    if (this.mounted){
+      setState(() {
+        this._activity = activity;
+      });
+    }
   }
 
 
@@ -86,6 +93,10 @@ class _AppState extends State<App> {
             label: 'Início'
         ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Pesquisar local'
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.assignment),
             label: 'Créditos'
           )
@@ -93,7 +104,7 @@ class _AppState extends State<App> {
       ),
         body: PageView(
           controller: _activityController,
-          onPageChanged: _push,
+          onPageChanged: _mount,
           children: _activities,
         )
     );

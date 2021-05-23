@@ -16,8 +16,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
-  bool keepAlive = false;
-  StreamSubscription _update;
   final String _iconBase = 'assets/colorIcons/';
   Position _position;
   String _address;

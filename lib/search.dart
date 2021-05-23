@@ -18,6 +18,15 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search>{
   TextEditingController _textEditingController = TextEditingController();
+  RequestController _controller;
+  final String _iconBase = 'assets/colorIcons/';
+  Location _position;
+  String _address;
+  double _latitude;
+  double _longitude;
+  List _params;
+  var _data;
+
   Map<String, bool> _checks ={
     'temperature': false,
     'temperatureApparent': false,
@@ -26,13 +35,52 @@ class _SearchState extends State<Search>{
     'windDirection': false,
     'pressureSurfaceLevel': false,
     'precipitationProbability': false,
-    'sunriseTime': false,
-    'sunsetTime': false,
   };
 
   List temp = [];
 
-  void requestTime(){
+  mountMetrics(){
+    _checks.forEach((key, value) {
+      if(value){
+        temp.add(key);
+      }
+    });
+    return temp;
+  }
+  void requestTime() async {
+    String placeMark = _textEditingController.text;
+    List<Location> position = await locationFromAddress(placeMark);
+
+    setState(() {
+      _position = position[0];
+      _latitude = _position.latitude;
+      _longitude = _position.longitude;
+    });
+
+    String address = await placemarkFromCoordinates(_latitude, _longitude)
+        .then((value){
+      return (value.first.subAdministrativeArea != '') ? value.first.subAdministrativeArea : value.first.locality;});
+
+    _params = new List.from(mountMetrics());
+
+    if (_params.isEmpty){
+      setState(() {
+        _controller = new RequestController(_latitude, _longitude);
+      });
+
+    } else if (_params.isNotEmpty){
+      setState(() {
+        _controller = new RequestController(_latitude, _longitude, _params);
+      });
+
+      temp.clear();
+    }
+    var resp = await _controller.request();
+    setState(() {
+      _data = resp;
+      _address = address;
+      print(_data);
+    });
 
   }
 
@@ -56,16 +104,73 @@ class _SearchState extends State<Search>{
                       style: TextStyle(
                           fontSize: 14),
                       controller: _textEditingController,
-                      onSubmitted: (String text){},
+                      onSubmitted: (String text){
+                        requestTime();
+                      },
                     ),
                   ),
                   IconButton(
                     padding: EdgeInsets.only(top: 26),
                     icon: Icon(Icons.search),
-                    onPressed: (){},
+                    onPressed: (){
+                      requestTime();
+                      },
                   )],
-              )),
-        ],
+              )
+          ),
+          Expanded(
+            child: ListView(
+              children: [
+                ExpansionTile(
+                  title: Text('Métricas'),
+                  children:_checks.keys.map((String key){
+                    return CheckboxListTile(
+                      title: Text(key),
+                      value: _checks[key],
+                      activeColor: Colors.indigo,
+                      checkColor: Colors.blue,
+                      onChanged: (bool value){
+                        setState(() {
+                          _checks[key] = value;
+                        }
+                        );
+                      },
+                    );
+                  }).toList(),
+
+                )
+              ],
+              /*_checks.keys.map((String key){
+                return CheckboxListTile(
+                  title: Text(key),
+                  value: _checks[key],
+                  activeColor: Colors.indigo,
+                  checkColor: Colors.blue,
+                  onChanged: (bool value){
+                    setState(() {
+                      _checks[key] = value;
+                    }
+                    );
+                    },
+                );
+              }).toList(),*/
+            )
+          )
+/*          Padding(
+              padding: EdgeInsets.only(top: 50),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Placeholder | '),
+                  SvgPicture.asset(
+                    _iconBase + 'ice_pellets.svg',
+                    semanticsLabel: 'Icon',
+                    width: 45,
+                    height: 45,
+                  ),
+                ],
+              )
+          ),*/],
       )
     );
   }

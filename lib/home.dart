@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:nixaer/util/getPermissions.dart';
 import 'package:nixaer/connection/requestcontroller.dart';
+import 'package:nixaer/weatherCodes.dart' as weatherCodes;
 
 class Home extends StatefulWidget {
   Home({Key key, this.title}) : super(key: key);
@@ -52,6 +53,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
       _data = resp;
       _address = address;
       print(_data);
+      print(weatherCodes.WeatherCodes.getWeatherImgName(_data['data']['timelines'][0]['intervals'][0]));
     });
   }
 

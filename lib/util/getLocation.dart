@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 
 class FetchCurrentLocation{
   Position currentposition;

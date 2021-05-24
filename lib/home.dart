@@ -1,12 +1,13 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:nixaer/util/getPermissions.dart';
 import 'package:nixaer/connection/requestcontroller.dart';
-import 'package:nixaer/weatherCodes.dart' as weatherCodes;
+import 'package:nixaer/util/weatherCodes.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 
 class Home extends StatefulWidget {
   Home({Key key, this.title}) : super(key: key);
@@ -20,9 +21,11 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
   final String _iconBase = 'assets/colorIcons/';
   Position _position;
   String _address;
+  String _weather;
+  String _timezone;
   double _latitude;
   double _longitude;
-  var _data;
+  List _data;
 
   @override
   bool get wantKeepAlive => true;
@@ -37,27 +40,33 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
 
   Future _fetchPosition() async {
     Position position = await Geolocator.getCurrentPosition();
+    String timezone;
+
+    try {
+      timezone = await FlutterNativeTimezone.getLocalTimezone();
+    } catch (e) {
+      print('Could not get the local timezone');
+    }
+
     setState(() {
       _position = position;
       _latitude = _position.latitude;
       _longitude = _position.longitude;
+      _timezone = timezone;
     });
 
     String address = await placemarkFromCoordinates(_latitude, _longitude)
         .then((value){
           return (value.first.subAdministrativeArea != '') ? value.first.subAdministrativeArea : value.first.locality;});
 
-    RequestController _controller = new RequestController(_latitude, _longitude);
+    RequestController _controller = new RequestController(_latitude, _longitude, timezone: _timezone, timesteps: ['1h']);
     var resp = await _controller.request();
     setState(() {
       _data = resp;
       _address = address;
-      print(_data);
-      print(weatherCodes.WeatherCodes.getWeatherImgName(_data['weatherCode']));
+      _weather = WeatherCodes.getWeatherImgName(RequestController.getWCode(_data, 0), RequestController.getTimeHours(_data, 0));
     });
   }
-
-//TODO update weather button
 
 
   @override
@@ -75,50 +84,115 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
                       padding: EdgeInsets.only(top: 50),
                       child: Row(
                         children: [
+                          Text('$_address | '),
                           SvgPicture.asset(
-                            _iconBase + 'ice_pellets.svg',
+                            _iconBase + '$_weather',
                             semanticsLabel: 'Icon',
-                            width: 45,
-                            height: 45,
+                            width: 30,
+                            height: 30,
                           ),
-                          Text('Placeholder'),
-                          IconButton(
-                            icon: Icon(Icons.access_alarm),
-                            onPressed: (){
-
-                            },
-                          ),
+                          (_data != null)
+                              ? Text(' ${RequestController.getTemperature(_data, 0)}º')
+                              : Text('Aguardando')
                         ],
                       )
                   ),
                 ],
               ),
             ),
-            Text('$_position, $_address'),
-            IconButton(
-              icon: Icon(Icons.share_location),
-              onPressed: _fetchPosition,
+            Padding(
+              padding: EdgeInsets.only(top: 50, bottom: 10),
+              child: Row(
+                children: [Text('Previsão:')],
+              ),
             ),
-
-            /*FutureBuilder(
-          future: _position,
-          builder: (context, snapshot){
-            if (!snapshot.hasData){
-              return Center(child: CircularProgressIndicator());
-              return Text('${snapshot.data}');
-            }
-            var _data = snapshot.data;
-            return Text('${_data.longitude}');
-          },
-        ),*/
-          ]),
+            Divider(),
+            AnimationLimiter(
+              child: Expanded(
+                  child: ListView.separated(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: 25,
+                        itemBuilder: (BuildContext context, num index){return AnimationConfiguration.staggeredList(
+                          position: index,
+                            child: SlideAnimation(
+                              child: FadeInAnimation(
+                                  child:(_data != null) ?
+                                  ((RequestController.getTimeHours(_data, index)) == 00) ?
+                                  Column(
+                                    children: [
+                                      Divider(
+                                        indent: 8,
+                                        endIndent: 8,
+                                        thickness: 4,
+                                        color: Colors.indigo,
+                                      ),
+                                      Divider(),
+                                      Row(
+                                        children: [
+                                          Text('${RequestController.getTimeFull(_data, index)} ',
+                                              style: Theme.of(context).textTheme.bodyText1),
+                                          SvgPicture.asset(
+                                            _iconBase + '${WeatherCodes
+                                                .getWeatherImgName(RequestController.getWCode(_data, index), RequestController.getTimeHours(_data, index))}',
+                                            semanticsLabel: 'Icon',
+                                            width: 26,
+                                            height: 26,
+                                          ),
+                                          Text(' ${RequestController.getTemperature(_data, index)}ºC',
+                                              style: Theme.of(context).textTheme.bodyText1)
+                                        ],
+                                      )
+                                    ],
+                                  )
+                                      :
+                                  Row(
+                                    children: [
+                                      Text('${RequestController.getTimeFull(_data, index)} ',
+                                          style: Theme.of(context).textTheme.bodyText1),
+                                      SvgPicture.asset(
+                                        _iconBase + '${WeatherCodes
+                                            .getWeatherImgName(RequestController.getWCode(_data, index),
+                                            RequestController.getTimeHours(_data, index))}',
+                                        semanticsLabel: 'Icon',
+                                        width: 26,
+                                        height: 26,
+                                      ),
+                                      Text(' ${RequestController.getTemperature(_data, index)}ºC',
+                                          style: Theme.of(context).textTheme.bodyText1)
+                                    ],
+                                  )
+                                      : Text('Aguardando')
+                              ),
+                            )
+                        );
+                        },
+                        separatorBuilder: (BuildContext context, int index) => const Divider(),
+                      )
+                  )
+                  ),
+            Column(
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.center,
+                      children: [IconButton(
+                        tooltip: 'Atualizar localização atual',
+                        icon: Icon(Icons.share_location_rounded),
+                        onPressed: _fetchPosition,
+                        iconSize: 45,
+                      )]
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      'Atualizar localização',
+                      style: TextStyle(
+                      fontSize: 16
+                    ),)
+                  )
+                ],
+              ),
+          ]
+      ),
     );
   }
-
-
 }
-
-
-
-
-

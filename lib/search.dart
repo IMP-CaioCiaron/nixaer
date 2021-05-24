@@ -1,11 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:nixaer/util/getPermissions.dart';
 import 'package:nixaer/connection/requestcontroller.dart';
+import 'package:nixaer/util/weatherCodes.dart';
+import 'package:nixaer/util/formatOutput.dart';
 
 
 class Search extends StatefulWidget {
@@ -27,7 +28,17 @@ class _SearchState extends State<Search>{
   List _params;
   var _data;
 
-  Map<String, bool> _checks ={
+  Map<String, String> _checks = {
+    'temperature': 'Temperatura',
+    'temperatureApparent': 'Sensação térmica',
+    'humidity': 'Humidade',
+    'windSpeed': 'Velocidade do vento',
+    'windDirection': 'Direção do vento',
+    'pressureSurfaceLevel': 'Pressão na superfície',
+    'precipitationProbability': 'Chance de precipitação'
+  };
+
+  Map<String, bool> _metrics ={
     'temperature': false,
     'temperatureApparent': false,
     'humidity': false,
@@ -40,16 +51,24 @@ class _SearchState extends State<Search>{
   List temp = [];
 
   mountMetrics(){
-    _checks.forEach((key, value) {
+    _metrics.forEach((key, value) {
       if(value){
         temp.add(key);
       }
     });
     return temp;
   }
+
   void requestTime() async {
     String placeMark = _textEditingController.text;
     List<Location> position = await locationFromAddress(placeMark);
+    String timezone;
+
+    try {
+      timezone = await FlutterNativeTimezone.getLocalTimezone();
+    } catch (e) {
+      print('Could not get the local timezone');
+    }
 
     setState(() {
       _position = position[0];
@@ -65,12 +84,12 @@ class _SearchState extends State<Search>{
 
     if (_params.isEmpty){
       setState(() {
-        _controller = new RequestController(_latitude, _longitude);
+        _controller = new RequestController(_latitude, _longitude, timezone: timezone);
       });
 
     } else if (_params.isNotEmpty){
       setState(() {
-        _controller = new RequestController(_latitude, _longitude, _params);
+        _controller = new RequestController(_latitude, _longitude, fields:_params, timezone: timezone);
       });
 
       temp.clear();
@@ -79,9 +98,7 @@ class _SearchState extends State<Search>{
     setState(() {
       _data = resp;
       _address = address;
-      print(_data);
     });
-
   }
 
 
@@ -123,54 +140,67 @@ class _SearchState extends State<Search>{
               children: [
                 ExpansionTile(
                   title: Text('Métricas'),
-                  children:_checks.keys.map((String key){
+                  children:_metrics.keys.map((String key){
                     return CheckboxListTile(
-                      title: Text(key),
-                      value: _checks[key],
+                      title: Text('${_checks[key]}'),
+                      value: _metrics[key],
                       activeColor: Colors.indigo,
                       checkColor: Colors.blue,
                       onChanged: (bool value){
                         setState(() {
-                          _checks[key] = value;
+                          _metrics[key] = value;
                         }
                         );
                       },
                     );
                   }).toList(),
-
                 )
               ],
-              /*_checks.keys.map((String key){
-                return CheckboxListTile(
-                  title: Text(key),
-                  value: _checks[key],
-                  activeColor: Colors.indigo,
-                  checkColor: Colors.blue,
-                  onChanged: (bool value){
-                    setState(() {
-                      _checks[key] = value;
-                    }
-                    );
-                    },
-                );
-              }).toList(),*/
             )
-          )
-/*          Padding(
-              padding: EdgeInsets.only(top: 50),
+          ),
+          (_data != null) ? Padding(
+              padding: EdgeInsets.only(bottom: 25),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Placeholder | '),
+                  Text('Clima: '),
                   SvgPicture.asset(
-                    _iconBase + 'ice_pellets.svg',
+                    _iconBase + '${WeatherCodes
+                        .getWeatherImgName(RequestController.getWCode(_data, 0), RequestController.getTimeHours(_data, 0))}',
                     semanticsLabel: 'Icon',
-                    width: 45,
-                    height: 45,
-                  ),
+                    width: 30,
+                    height: 30,
+                  )
                 ],
               )
-          ),*/],
+          ) : Text(''),
+          AnimationLimiter(
+              child: Expanded(
+                  child: ListView.separated(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: (_params != null) ? _params.length-1 : 0,
+                    itemBuilder: (BuildContext context, num index){return AnimationConfiguration.staggeredList(
+                        position: index,
+                        child: SlideAnimation(
+                          child: FadeInAnimation(
+                            child: (_data != null) ?
+                            Column(children: [
+                              Row(
+                                children: [
+                                  formatOutput(_checks[_params[index]], _data, 0)
+                                ],
+                              )
+                            ]
+                            ) : Text('Aguardando')
+                          ),
+                        )
+                    );
+                    },
+                    separatorBuilder: (BuildContext context, int index) => const Divider(),
+                  )
+              )
+          )
+        ],
       )
     );
   }

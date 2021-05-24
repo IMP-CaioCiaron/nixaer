@@ -20,7 +20,8 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.blue[800],
         fontFamily: 'Georgia',
         textTheme: TextTheme(
-          bodyText2: TextStyle(color: Colors.white, fontSize: 24)
+          bodyText2: TextStyle(color: Colors.white, fontSize: 24),
+          bodyText1: TextStyle(color: Colors.white, fontSize: 18)
         ),
 
         visualDensity: VisualDensity.adaptivePlatformDensity,

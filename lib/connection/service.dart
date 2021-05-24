@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 
@@ -35,7 +34,6 @@ import 'dart:async';
 class Service{
 
   static Future<Map> get(params) async {
-    print(params);
     Uri uri = Uri.https('api.tomorrow.io', 'v4/timelines', params);
     http.Response resp = await http.get(uri);
     return jsonDecode(resp.body);

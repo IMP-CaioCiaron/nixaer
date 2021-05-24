@@ -1,5 +1,3 @@
-import 'dart:io' as io;
-
 class WeatherCodes{
   static final Map<String, String> WEATHERCODES = {
     "0": "Unknown",
@@ -31,8 +29,22 @@ class WeatherCodes{
     "8000": "tstorm.svg"
   };
 
-  static getWeatherImgName(int wCode){
-    return WEATHERCODES[wCode.toString()];
-  }
+  static getWeatherImgName(int wCode, int currentTime){
+    String fileName = WEATHERCODES[wCode.toString()];
 
+    switch(wCode){
+      case 1000:
+      case 1100:
+      case 1101:
+        if (currentTime >= 18 || currentTime <= 05){
+          fileName = fileName.substring(0, fileName.indexOf('.')) + '_night.svg';
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    return fileName;
+  }
 }

@@ -72,7 +72,19 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
   @override
   Widget build(BuildContext context){
     super.build(context);
-    return Container(
+    return (_data == null) ?
+    SizedBox(
+      child:
+      Center(
+          child: CircularProgressIndicator(
+              color: Theme.of(context).accentColor
+          )
+      ),
+      height: 100.0,
+      width: 100.0,
+    )
+    :
+    Container(
       child: Column(
           children: [
             Padding(
@@ -91,9 +103,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
                             width: 30,
                             height: 30,
                           ),
-                          (_data != null)
-                              ? Text(' ${RequestController.getTemperature(_data, 0)}º')
-                              : Text('Aguardando')
+                          Text(' ${RequestController.getTemperature(_data, 0)}º')
                         ],
                       )
                   ),
@@ -117,7 +127,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
                           position: index,
                             child: SlideAnimation(
                               child: FadeInAnimation(
-                                  child:(_data != null) ?
+                                  child:
                                   ((RequestController.getTimeHours(_data, index)) == 00) ?
                                   Column(
                                     children: [
@@ -162,7 +172,6 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin{
                                           style: Theme.of(context).textTheme.bodyText1)
                                     ],
                                   )
-                                      : Text('Aguardando')
                               ),
                             )
                         );

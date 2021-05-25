@@ -176,7 +176,19 @@ class _SearchState extends State<Search>{
           ) : Text(''),
           (_params != null) ?
           AnimationLimiter(
-              child: Expanded(
+              child: (_data == null) ?
+              SizedBox(
+                child:
+                Center(
+                    child: CircularProgressIndicator(
+                        color: Theme.of(context).accentColor
+                    )
+                ),
+                height: 100.0,
+                width: 100.0,
+              )
+                  :
+              Expanded(
                   child: ListView.separated(
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
@@ -185,17 +197,15 @@ class _SearchState extends State<Search>{
                         position: index,
                         child: SlideAnimation(
                           child: FadeInAnimation(
-                            child: (_data != null) ?
-                            Column(children: [
-                              Row(
+                            child: Column(
                                 children: [
-                                  (_data != null)
-                                      ? formatOutput(_checks[_params[index]], _data, 0)
-                                      :Text('Carregando')
+                                  Row(
+                                    children: [
+                                      formatOutput(_checks[_params[index]], _data, 0)
                                 ],
                               )
                             ]
-                            ) : Text('Aguardando')
+                            )
                           ),
                         )
                     );

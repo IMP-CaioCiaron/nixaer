@@ -1,7 +1,7 @@
 import 'package:nixaer/connection/service.dart';
 
 class RequestController {
-  String _key = '5qA53G8Pik4xxibfLbFriQ2Ztb05rTjx';
+  String _key = 'OZaBln91E0od1pWz6s7OArKWbpGK4YE9' /*'5qA53G8Pik4xxibfLbFriQ2Ztb05rTjx'*/;
   String _lat;
   String _long;
   Map<String, Object> _params;
@@ -43,19 +43,19 @@ class RequestController {
     return data[index]['values']['weatherCode'];
   }
 
-  static int getTemperature(List data, int index){
-    return data[index]['values']['temperature'].round();
+  static num getTemperature(List data, int index){
+    return data[index]['values']['temperature'];
   }
 
-  static int getTemperatureApparent(List data, int index){
-    return data[index]['values']['temperatureApparent'].round();
+  static num getTemperatureApparent(List data, int index){
+    return data[index]['values']['temperatureApparent'];
   }
 
-  static int getHumidity(List data, int index){
-    return data[index]['values']['humidity'].round();
+  static num getHumidity(List data, int index){
+    return data[index]['values']['humidity'];
   }
 
-  static double getWindSpeed(List data, int index){
+  static num getWindSpeed(List data, int index){
     return data[index]['values']['windSpeed'];
   }
 

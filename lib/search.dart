@@ -84,6 +84,7 @@ class _SearchState extends State<Search>{
 
     if (_params.isEmpty){
       setState(() {
+        _params = ['temperature', 'weatherCode'];
         _controller = new RequestController(_latitude, _longitude, timezone: timezone);
       });
 
@@ -173,12 +174,13 @@ class _SearchState extends State<Search>{
                 ],
               )
           ) : Text(''),
+          (_params != null) ?
           AnimationLimiter(
               child: Expanded(
                   child: ListView.separated(
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
-                    itemCount: (_params != null) ? _params.length-1 : 0,
+                    itemCount: _params.length-1,
                     itemBuilder: (BuildContext context, num index){return AnimationConfiguration.staggeredList(
                         position: index,
                         child: SlideAnimation(
@@ -187,7 +189,9 @@ class _SearchState extends State<Search>{
                             Column(children: [
                               Row(
                                 children: [
-                                  formatOutput(_checks[_params[index]], _data, 0)
+                                  (_data != null)
+                                      ? formatOutput(_checks[_params[index]], _data, 0)
+                                      :Text('Carregando')
                                 ],
                               )
                             ]
@@ -199,7 +203,7 @@ class _SearchState extends State<Search>{
                     separatorBuilder: (BuildContext context, int index) => const Divider(),
                   )
               )
-          )
+          ) : Text('')
         ],
       )
     );

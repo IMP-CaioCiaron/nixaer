@@ -1,7 +1,7 @@
 import 'package:nixaer/connection/service.dart';
 
 class RequestController {
-  String _key = 'OZaBln91E0od1pWz6s7OArKWbpGK4YE9' /*'5qA53G8Pik4xxibfLbFriQ2Ztb05rTjx'*/;
+  String _key = 'KEY_HERE'
   String _lat;
   String _long;
   Map<String, Object> _params;
